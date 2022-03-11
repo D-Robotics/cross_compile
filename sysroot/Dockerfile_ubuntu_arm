@@ -6,6 +6,8 @@ FROM ${ARM_ARCH}/ubuntu:focal
 
 COPY ./qemu-user-static/* /usr/bin/
 
+COPY ./sources.list /etc/apt
+
 # Set timezone
 RUN echo 'Etc/UTC' > /etc/timezone && \
     ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
@@ -16,7 +18,8 @@ RUN apt update
 # ROS2 dependencies
 RUN apt install -y --no-install-recommends \
     build-essential \
-    libbullet-dev 
+    libbullet-dev   \
+    libasio-dev 
 
 RUN apt install --no-install-recommends -y \
     libtinyxml2-dev 
