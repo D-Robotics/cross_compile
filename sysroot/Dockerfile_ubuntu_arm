@@ -16,13 +16,23 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
 RUN apt update
 
 # ROS2 dependencies
-RUN apt install -y --no-install-recommends \
+RUN apt update && apt install -y --no-install-recommends \
     build-essential \
     libbullet-dev   \
     libasio-dev 
 
-RUN apt install --no-install-recommends -y \
-    libtinyxml2-dev 
+RUN apt update && apt install --no-install-recommends -y \
+    libtinyxml2-dev \
+    sqlite3 \
+    libsqlite3-dev \
+    libeigen3-dev \
+    liblog4cxx-dev \
+    libcurl4-openssl-dev \
+    python3.8 \
+    python3-dev \
+    libboost-dev \
+    libboost-date-time-dev \
+    libboost-thread-dev 
 
 WORKDIR /
 RUN apt-get install -y symlinks
