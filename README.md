@@ -1,5 +1,6 @@
 English| [简体中文](./README_cn.md)
 
+
 # ROS / ROS 2 Cross Compile Tool
 
 ![License](https://img.shields.io/github/license/ros-tooling/cross_compile)
@@ -49,7 +50,9 @@ If you are using a Linux host, you must also install QEmu (Docker for OSX perfor
 sudo apt-get install qemu-user-static
 ```
 
-### Installing ros_cross_compileTo install the stable release,
+### Installing ros_cross_compile
+
+To install the stable release,
 
 ```sh
 pip3 install ros_cross_compile
@@ -97,7 +100,9 @@ To build, it runs `colcon build`.
 
 You can provide arbitrary arguments to these commands via the [colcon `defaults.yaml`](https://colcon.readthedocs.io/en/released/user/configuration.html#defaults-yaml).
 
-You can either specify the name of this file via `ros_cross_compile --colcon-defaults /path/to/defaults.yaml`, or if not specified, a file called `defaults.yaml` will be used if present.For example, there are repositories checked out in your workspace that contain packages that are not needed for your application - some repos provide many packages and you may only want one!
+You can either specify the name of this file via `ros_cross_compile --colcon-defaults /path/to/defaults.yaml`, or if not specified, a file called `defaults.yaml` will be used if present.
+
+For example, there are repositories checked out in your workspace that contain packages that are not needed for your application - some repos provide many packages and you may only want one!
 In this scenario there is a "bringup" package that acts as the entry point to your application:
 
 ```yaml
@@ -145,6 +150,7 @@ ros_cross_compile /path/to/my/workspace --arch aarch64 --os ubuntu \
   --custom-rosdep-script /path/to/rosdep-script.sh \
   --custom-data-dir /arbitrary/local/directory
 ```
+
 ### Custom setup script
 
 Your ROS application may have build needs that aren't covered by `rosdep install`.
@@ -194,12 +200,16 @@ pip3 install -U colcon-ros-bundle
 
 colcon bundle \
   --build-base build_"${TARGET_ARCH}" \
-  --install-base install_"${TARGET_ARCH}" \--bundle-base bundle_"${TARGET_ARCH}"
+  --install-base install_"${TARGET_ARCH}" \
+  --bundle-base bundle_"${TARGET_ARCH}"
+```
 
 Now, run
 
+```
 ros_cross_compile /path/to/my/workspace --arch aarch64 --os ubuntu \
   --custom-post-build-script ./postbuild.sh
+```
 
 After the build completes, you should see the bundle outputs in `bundle_aarch64`
 
@@ -240,46 +250,48 @@ Now, during the sysroot creation process, you should see the contents of `someth
 NOTE: for trivial text files, as in the preceding example, you could have created those files fully within the `--custom-setup-script`. But for large or binary data such as precompiled libraries, this feature comes to the rescue.
 
 
-### Runtime Image`ros_cross_compile` 可选择创建并标记一个包含构建输出及其运行时依赖项的 Docker 镜像。
+### Runtime Image
 
-参数 `--runtime-tag` 接受一个单一取值，用于输出镜像的标记。
+`ros_cross_compile` can optionally create and tag a Docker image that contains the build output and its runtime dependencies.
+
+The argument `--runtime-tag` takes a single value, which is the tag used for the output image.
 
 ```
 OUTPUT_IMAGE=my_registry/image_name:image_tag
 ros_cross_compile $workspace --runtime-tag $OUTPUT_IMAGE
 ```
 
-将此镜像部署的一种方法是将其推送到注册表，然后可以将其拉取到目标平台上
+One way to deploy this image is to push it to a registry, from where it can be pulled onto a target platform
 
 ```
 docker push $OUTPUT_IMAGE
 ```
 
-如果需要，镜像中包含任何必需的仿真二进制文件以在本地运行进行烟测试。
+The image contains any necessary emulation binaries to run locally if desired for smoke testing.
 
 ```
 docker run -it $OUTPUT_IMAGE
-# 在运行容器内的 shell 中，设置默认 entrypoint 的设置已经被加载
+# In the shell inside the running container, the setup is already sourced for the default entrypoint
 ros2 launch my_package my.launch.py
 ```
 
-注意：目前此功能是在用于构建的镜像之上的一个薄层，因此它不是完全精简的镜像 - 它包含构建工具、构建依赖项和测试依赖项，以及必要的运行时依赖项。
-未来计划对此输出镜像进行精简，使其成为一个合适的最小运行时镜像。
-此工作在 https://github.com/ros-tooling/cross_compile/issues/263 中进行跟踪。
+Note: Currently this feature is a thin layer on top of the image used for building, so it is not a fully minimal image - it contains build tools, build dependencies, and test dependencies in addition to the necessary runtime dependencies.
+Future work is planned to slim down this output image to a properly minimal runtime.
+This work is tracked in https://github.com/ros-tooling/cross_compile/issues/263.
 
 
-## 教程
+## Tutorial
 
-对于新用户，本节将逐步引导您完成一个代表性用例。
+For a new user, this section walks you through a representative use case, step by step.
 
-本教程演示了如何将 [ROS 2 演示节点](https://github.com/ros-tooling/demos) 交叉编译到 ROS 2 Foxy，以在 ARM64 Ubuntu 系统上运行。
-您可以将此工作流泛化为在任何工作空间中用于您的项目。
+This tutorial demonstrates how to cross-compile the [ROS 2 Demo Nodes](https://github.com/ros-tooling/demos) against ROS 2 Foxy, to run on an ARM64 Ubuntu system.
+You can generalize this workflow to use on any workspace for your project.
 
-注意：本教程假定主机平台为基于 Debian 的（包括 Ubuntu）Linux 发行版。
+NOTE: this tutorial assumes a Debian-based (including Ubuntu) Linux distribution as the host platform.
 
-### 创建一个简单的源工作空间
+### Creating a simple source workspace
 
-为您的工作空间创建一个目录并检出源代码
+Create a directory for your workspace and checkout the sources
 
 ```
 mkdir -p cross_compile_ws/src
@@ -287,7 +299,10 @@ cd cross_compile_ws
 git clone -b foxy https://github.com/ros2/demos src/demos
 ```
 
-在此目录中创建一个名为 `defaults.yaml` 的文件，并包含以下内容。此文件会缩小要构建的软件包集，而不是构建源代码库中的每个软件包。此文件是可选的 - 请参阅前述部分“软件包选择和构建自定义”以获取更多信息。```
+Create a file `defaults.yaml` in this directory with the following contents. This file narrows down the set of built packages, rather than building every single package in the source repository. This file is optional - see preceding section "Package Selection and Build Customization
+" for more information.
+
+```
 build:
   # only build the demo_nodes_cpp package, to save time building all of the demos
   packages-up-to:
@@ -298,6 +313,7 @@ build:
   event-handlers:
     - console_cohesion+
     - console_package_list+
+
 ```
 
 ### Running the cross-compilation
@@ -334,7 +350,9 @@ defaults.yaml
 install_aarch64/
 log/
 src/
-```* The created directory `install_aarch64` is the installation of your ROS workspace for your target architecture.
+```
+
+* The created directory `install_aarch64` is the installation of your ROS workspace for your target architecture.
 * `cc_internals` is used by `ros_cross_compile` to cache artifacts between builds - as a user you will not need to inspect it
 
 You can verify that the build created binaries for the target architecture (note "ARM aarch64" in below output. Your `sha1` may differ):
@@ -383,7 +401,7 @@ services:
 
 variables:
   # Disable TLS or we get SSLv1 errors. We shouldn't need this since we mount the /certs volume.
-```# We also need to connect to the docker daemon via DOCKER_HOST.
+  # We also need to connect to the docker daemon via DOCKER_HOST.
   DOCKER_TLS_CERTDIR: ""
   DOCKER_HOST: tcp://docker:2375
 
@@ -424,5 +442,6 @@ This library is licensed under the Apache 2.0 License.
 | ------------- | --------------- | ----------- | --------------------- | --------------------- | -------------------- | -------------------- |
 | Latest        | `master`        | [![Test Pipeline Status](https://github.com/ros-tooling/cross_compile/workflows/Test%20cross_compile/badge.svg)](https://github.com/ros-tooling/cross_compile/actions) | N/A                   | N/A                   | N/A                  | N/A                  |
 | Dashing       | `dashing-devel` | [![Build Status](http://build.ros2.org/buildStatus/icon?job=Ddev__cross_compile__ubuntu_bionic_amd64)](http://build.ros2.org/job/Ddev__cross_compile__ubuntu_bionic_amd64) | [![Build Status](http://build.ros2.org/buildStatus/icon?job=Dsrc_uB__cross_compile__ubuntu_bionic__source)](http://build.ros2.org/job/Dsrc_uB__cross_compile__ubuntu_bionic__source) | [![Build Status](http://build.ros2.org/buildStatus/icon?job=Dbin_uB64__cross_compile__ubuntu_bionic_amd64__binary)](http://build.ros2.org/job/Dbin_uB64__cross_compile__ubuntu_bionic_amd64__binary) | N/A | N/A |
+
 
 [ros2_dev_setup]: https://index.ros.org/doc/ros2/Installation/Latest-Development-Setup/
