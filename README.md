@@ -256,20 +256,20 @@ NOTE: for trivial text files, as in the preceding example, you could have create
 
 The argument `--runtime-tag` takes a single value, which is the tag used for the output image.
 
-```
+```bash
 OUTPUT_IMAGE=my_registry/image_name:image_tag
 ros_cross_compile $workspace --runtime-tag $OUTPUT_IMAGE
 ```
 
 One way to deploy this image is to push it to a registry, from where it can be pulled onto a target platform
 
-```
+```bash
 docker push $OUTPUT_IMAGE
 ```
 
 The image contains any necessary emulation binaries to run locally if desired for smoke testing.
 
-```
+```bash
 docker run -it $OUTPUT_IMAGE
 # In the shell inside the running container, the setup is already sourced for the default entrypoint
 ros2 launch my_package my.launch.py
@@ -293,7 +293,7 @@ NOTE: this tutorial assumes a Debian-based (including Ubuntu) Linux distribution
 
 Create a directory for your workspace and checkout the sources
 
-```
+```bash
 mkdir -p cross_compile_ws/src
 cd cross_compile_ws
 git clone -b foxy https://github.com/ros2/demos src/demos
@@ -302,7 +302,7 @@ git clone -b foxy https://github.com/ros2/demos src/demos
 Create a file `defaults.yaml` in this directory with the following contents. This file narrows down the set of built packages, rather than building every single package in the source repository. This file is optional - see preceding section "Package Selection and Build Customization
 " for more information.
 
-```
+```bash
 build:
   # only build the demo_nodes_cpp package, to save time building all of the demos
   packages-up-to:
@@ -343,7 +343,7 @@ ls cross_compile_ws
 
 If the build succeeded, the directory looks like this:
 
-```
+```bash
 build_aarch64/
 cc_internals/
 defaults.yaml
